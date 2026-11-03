@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Grafo dirigido y matriz de adyacencia: actividad de Introducción a Grafos, Investigación de Operaciones I." />
+  <title>Laboratorio de Grafos | Investigación de Operaciones I</title>
+  <style>
+    :root { --navy:#111d35; --navy-2:#172744; --paper:#f5f7fb; --white:#fff; --border:#e2e9f2; --muted:#65748b; --ink:#1c2940; --cyan:#0f9fa5; --cyan-dark:#087d84; --gold:#e8a145; --blue:#3762b7; --violet:#6d68cf; --soft-cyan:#e7f7f6; --soft-gold:#fff4e4; --shadow:0 14px 45px rgba(35,51,78,.075); }
+    * { box-sizing:border-box; }
+    html { scroll-behavior:smooth; }
+    body { margin:0; background:var(--paper); font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif; color:var(--ink); -webkit-font-smoothing:antialiased; }
+    button,select,input { font:inherit; }
+    button { cursor:pointer; }
+    button:focus-visible, input:focus-visible, .node:focus-visible, .matrix-table th:focus-visible { outline:3px solid #8bd2d9; outline-offset:3px; }
+    .layout { display:grid; grid-template-columns:235px minmax(0,1fr); min-height:100vh; }
+    .sidebar { background:var(--navy); color:white; padding:34px 19px 22px; display:flex; flex-direction:column; gap:35px; }
+    .brand { display:flex; align-items:center; gap:12px; padding:0 12px; }
+    .brand-mark { width:43px;height:43px; display:grid;place-items:center; background:linear-gradient(135deg,#22c5ba,#1484b5); border-radius:13px; font-size:18px; font-weight:800; box-shadow:0 8px 18px rgba(0,0,0,.18); }
+    .brand-title { font-size:15px; font-weight:800; letter-spacing:.1px; line-height:1.4; }
+    .brand-subtitle { font-size:10px; font-weight:700; letter-spacing:1.6px; color:#aebbd0; text-transform:uppercase; }
+    .nav-label { font-size:10px; font-weight:800; letter-spacing:1.8px; color:#8194b6; margin:0 13px 12px; }
+    .nav-link { color:#aebed7; text-decoration:none; display:flex; align-items:center; gap:12px; padding:13px; margin-bottom:5px; border-radius:12px; font-size:13px; font-weight:600; transition:background .15s,color .15s; }
+    .nav-link:hover,.nav-link.active { background:#243651; color:white; }
+    .nav-symbol { font-size:18px; width:21px; text-align:center; color:#70c7c7; }
+    .sidebar-note { margin-top:auto; padding:17px 14px; border:1px solid #35435e; background:#1b2b47; border-radius:13px; }
+    .sidebar-note .small { color:#b2c1d7; font-size:12px; line-height:1.55; margin-top:8px; }
+    .sidebar-note strong { font-size:12px; }
+    .main { width:100%; max-width:1540px; margin:auto; padding:32px 38px 40px; min-width:0; }
+    .topline { color:#728098; font-size:12px; font-weight:700; letter-spacing:.3px; margin-bottom:14px; }
+    .topline span { color:#a5b1c2; margin:0 8px; }
+    .heading { display:flex; align-items:flex-start; justify-content:space-between; gap:16px; margin-bottom:22px; }
+    .heading h1 { margin:0 0 7px; font-size:clamp(25px,2.55vw,36px); font-weight:800; letter-spacing:-1.05px; }
+    .heading p { margin:0; line-height:1.6; font-size:14px; color:var(--muted); max-width:740px; }
+    .tag { display:inline-flex; align-items:center; gap:8px; border:1px solid #b6e4df; background:var(--soft-cyan); color:#167c7d; border-radius:999px; padding:9px 13px; font-size:11px; font-weight:800; white-space:nowrap; }
+    .tag .dot { width:8px; height:8px; background:#13a59f; border-radius:50%; }
+    .stats { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:15px; margin-bottom:20px; }
+    .stat { background:white; border:1px solid var(--border); box-shadow:0 3px 15px rgba(41,60,92,.025); border-radius:17px; padding:18px 19px 17px; min-width:0; }
+    .stat .stat-name { font-size:12px; color:#738198; font-weight:700; margin-bottom:7px; }
+    .stat .stat-number { font-size:29px; font-weight:850; letter-spacing:-1px; line-height:1.15; }
+    .stat .stat-foot { font-size:11px; color:#8592a5; margin-top:6px; }
+    .stat .stat-number small { font-size:15px; font-weight:750; color:var(--cyan-dark); }
+    .panel { background:white; border:1px solid var(--border); box-shadow:var(--shadow); border-radius:19px; overflow:hidden; }
+    .primary { display:grid; grid-template-columns:minmax(0,2.4fr) minmax(290px,1fr); gap:19px; align-items:stretch; }
+    .panel-head { padding:20px 22px 15px; display:flex; gap:16px; align-items:center; justify-content:space-between; flex-wrap:wrap; }
+    .panel-title { font-size:16px; letter-spacing:-.3px; margin:0 0 4px; font-weight:800; }
+    .panel-desc { color:#8995a7; font-size:12px; margin:0; line-height:1.45; }
+    .controls { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+    .btn { border:1px solid var(--border); background:white; color:#425575; padding:9px 12px; border-radius:9px; font-size:11px; font-weight:800; transition:background .15s,border .15s; }
+    .btn:hover { background:#eff4f9; }
+    .btn.primary { background:#127f8b; color:white; border-color:#127f8b; }
+    .btn.primary:hover { background:#096673; }
+    .switch { display:inline-flex; align-items:center; gap:7px; font-size:11px; color:#53647a; font-weight:650; cursor:pointer; user-select:none; }
+    .switch input { width:14px;height:14px; accent-color:#138a96; cursor:pointer; }
+    .viz-wrap { padding:3px 18px 10px; }
+    #graph { width:100%; aspect-ratio: 1.58; display:block; border-radius:13px; background:radial-gradient(circle at 50% 35%, #fff 20%, #f8fbfe 100%); border:1px solid #ebf0f6; }
+    .graph-legend { display:flex; align-items:center; flex-wrap:wrap; gap:18px; padding:0 24px 19px; font-size:11px; color:#7a879b; }
+    .legend-item { display:flex; align-items:center; gap:7px; }
+    .legend-line { display:inline-block; width:20px; height:3px; border-radius:4px; background:#8aa0b9; }
+    .legend-line.out { background:var(--cyan); }
+    .legend-line.in { background:var(--gold); }
+    .guide { margin:0 20px 18px; padding:12px 14px; font-size:12px; color:#52647d; line-height:1.55; border-radius:10px; background:#f1f6fb; }
+    .inspector { display:flex; flex-direction:column; }
+    .inspector .panel-head { border-bottom:1px solid var(--border); }
+    .inspector-body { padding:22px 21px; flex:1; }
+    .current-node { display:flex; gap:13px; align-items:center; margin-bottom:21px; }
+    .letter { border-radius:16px; width:64px;height:64px; background:#e2f7f5; color:#0c898f; display:grid; place-items:center; font-weight:850; font-size:31px; flex:0 0 auto; }
+    .node-kicker { font-size:11px; color:#98a4b3; font-weight:700; letter-spacing:.8px; text-transform:uppercase; }
+    .node-name { font-size:19px; font-weight:800; margin-top:4px; }
+    .coord { font-size:12px; margin-top:5px; color:#718197; }
+    .degree-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:22px; }
+    .degree { padding:13px 13px; background:#f7f9fc; border:1px solid #edf0f5; border-radius:12px; }
+    .degree b { font-size:21px; display:block; margin-bottom:4px; }
+    .degree span { font-size:11px; color:#76859b; }
+    .degree.out b { color:#14969a; } .degree.in b { color:#bb7b26; }
+    .section-mini { font-size:12px; font-weight:800; color:#33455f; margin:16px 0 9px; }
+    .node-pills { display:flex;flex-wrap:wrap;gap:7px; min-height:36px; }
+    .node-pill { min-width:31px; padding:7px 10px; border-radius:8px; text-align:center; background:#e5f5f4; color:#0b8187; border:1px solid #cae9e7; font-weight:800; font-size:11px; }
+    .node-pill.in { color:#a06b2b; border-color:#f0dcbd; background:#fff5e8; }
+    .no-data { font-size:12px;color:#a2adbb;padding-top:5px; }
+    .inspector-tip { padding:13px 14px; background:#f6f8fc; border:1px dashed #d8e0ea; border-radius:11px; line-height:1.55; font-size:11.5px; color:#6b7a91; margin-top:18px; }
+    .below { margin-top:20px; display:grid; grid-template-columns:minmax(0,1.5fr) minmax(300px,1fr); gap:19px; }
+    .matrix-wrap { padding:0 22px 18px; overflow-x:auto; }
+    .matrix-table { border-collapse:separate; border-spacing:4px; width:100%; table-layout:fixed; min-width:590px; }
+    .matrix-table th { font-size:11px; color:#718198; background:#f5f8fc; border-radius:6px; text-align:center; font-weight:800; padding:8px 3px; }
+    .matrix-table th.row-th { background:#f5f8fc; }
+    .matrix-table td { cursor:pointer; text-align:center; border-radius:6px; font-size:11px; font-weight:750; padding:9px 3px; background:#f4f7fb; color:#b2becc; border:1px solid transparent; transition:background .12s; }
+    .matrix-table td.one { background:#dff3f1; color:#12838b; }
+    .matrix-table td.sel-row.one { background:#b9e7e3; }
+    .matrix-table td.sel-col.one { background:#fae8ce; color:#a8722e; }
+    .matrix-table td.sel-row.sel-col { outline:2px solid #2b9fa3; }
+    .matrix-table th.sel-head { background:#e4f5f4;color:#14848d; }
+    .matrix-table td:hover { outline:2px solid #a9c5e9; }
+    .matrix-note { margin:0 24px 22px; background:#f8fafc; padding:11px 13px; border-radius:10px; color:#67788f; font-size:12px; line-height:1.55; }
+    .rules-list { display:grid; grid-template-columns:1fr 1fr; gap:8px; padding:0 22px 24px; }
+    .rule { display:flex; align-items:center; justify-content:space-between; border:1px solid #edf1f6; border-radius:9px; background:#fafbfd; padding:9px 12px; gap:8px; }
+    .rule .source { color:#334866; font-size:12px; font-weight:850; }
+    .rule .targets { color:#698098; font-size:11px; text-align:right; }
+    .explain { background:linear-gradient(115deg,#edf8f8,#f5f9fd); border:1px solid #d4eeee; border-radius:12px; padding:14px 16px; margin:0 22px 20px; font-size:12px; color:#4b6177; line-height:1.6; }
+    .explain strong { color:#176f78; }
+    .foot { text-align:center; margin:26px auto 0; font-size:12px; color:#95a1b2; line-height:1.6; }
+    .axis-text { fill:#9aabc0; font-size:11px; font-weight:600; }
+    .axis-label { fill:#72839c; font-size:13px; font-weight:800; }
+    .grid-line { stroke:#e9eef5; stroke-width:1; }
+    .axis-line { stroke:#c5d1df; stroke-width:1.5; }
+    .edge-path { fill:none; stroke:#97a9bf; stroke-width:2.2; stroke-linecap:round; opacity:.73; vector-effect:non-scaling-stroke; transition:opacity .2s,stroke .2s,stroke-width .2s; }
+    .edge-path.edge-dim { opacity:.095; }
+    .edge-path.edge-out { stroke:#0e9aa0; stroke-width:3.1; opacity:1; }
+    .edge-path.edge-in { stroke:#e8a145; stroke-width:3.1; opacity:1; }
+    .node { cursor:pointer; }
+    .node .halo { fill:none; stroke:#b4eae6; stroke-width:7; opacity:0; transition:opacity .2s; }
+    .node .circle { fill:white; stroke:#486883; stroke-width:2.3; transition:fill .2s,stroke .2s,opacity .2s; }
+    .node text.letter-text { fill:#253d58; font-size:16px; font-weight:850; dominant-baseline:central; text-anchor:middle; pointer-events:none; }
+    .node text.coord-text { fill:#637995; font-size:10px; font-weight:650; dominant-baseline:central; text-anchor:middle; pointer-events:none; }
+    .node.node-dim { opacity:.37; }
+    .node.node-selected .halo { opacity:1; }
+    .node.node-selected .circle { fill:#0e959d;stroke:#0b838a; }
+    .node.node-selected text.letter-text { fill:white; }
+    .node.node-out .circle { stroke:#19a3a6; fill:#e6f7f5; }
+    .node.node-in .circle { stroke:#df9d3a; fill:#fff3e1; }
+    .node.node-both .circle { stroke:#8170d2; fill:#f0edff; }
+    .node:hover .halo { opacity:.65; }
+    @media (max-width:1250px) { .main{padding:26px 23px;} .layout{grid-template-columns:210px minmax(0,1fr);} .primary {grid-template-columns:minmax(0,1.7fr) minmax(245px,1fr);} .stat {padding:15px 14px;} }
+    @media (max-width:1010px) { .sidebar{display:none;} .layout{display:block;} .primary{grid-template-columns:1fr 300px;} .below{grid-template-columns:1fr;} }
+    @media (max-width:750px) { .main{padding:18px 13px 30px;} .stats{grid-template-columns:1fr 1fr;gap:10px;} .heading{display:block;} .tag{margin-top:12px;} .primary{grid-template-columns:1fr;} .panel-head{padding:16px;} .viz-wrap{padding:3px 8px 8px;} #graph{aspect-ratio:1.16;} .rules-list{grid-template-columns:1fr 1fr;gap:5px;padding:0 12px 18px;} .matrix-wrap{padding:0 10px 16px;} .matrix-note{margin:0 12px 16px;} .graph-legend{padding:0 12px 12px;gap:10px;} }
+    @media print { .sidebar, .controls, .guide, .btn, .foot {display:none!important;} body{background:white;} .layout{display:block;} .main{padding:0;} .stats{margin:8px 0;} .primary,.below{display:block;} .inspector,.rules-panel{display:none!important;} .panel{break-inside:avoid;box-shadow:none;border:1px solid #cbd5e1;margin-bottom:14px;} #graph{max-height:440px;} }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="brand"><div class="brand-mark">G</div><div><div class="brand-title">GraphLab</div><div class="brand-subtitle">Operations Research</div></div></div>
+      <div>
+        <div class="nav-label">EXPLORAR</div>
+        <a class="nav-link active" href="#visualizacion"><span class="nav-symbol">◎</span> Visualización</a>
+        <a class="nav-link" href="#matriz"><span class="nav-symbol">▦</span> Matriz de adyacencia</a>
+        <a class="nav-link" href="#reglas"><span class="nav-symbol">≡</span> Reglas de conexión</a>
+      </div>
+      <div class="sidebar-note"><strong>Investigación de Operaciones I</strong><div class="small">Tema 10 · Introducción a Grafos<br/>Actividad de la diapositiva 12</div></div>
+    </aside>
+    <main class="main">
+      <div class="topline">ACTIVIDADES <span>›</span> INTRODUCCIÓN A GRAFOS <span>›</span> PRÁCTICA INTERACTIVA</div>
+      <div class="heading"><div><h1>Explorador de redes</h1><p>Construcción del grafo dirigido a partir de las coordenadas y reglas del profesor. Selecciona un nodo para observar cómo se conecta con los demás y cómo se representa en su matriz.</p></div><div class="tag"><span class="dot"></span> Grafo dirigido</div></div>
+      <section class="stats" aria-label="Indicadores de la red">
+        <div class="stat"><div class="stat-name">Nodos</div><div class="stat-number" id="kpi-nodes">10</div><div class="stat-foot">Etiquetados de A a J</div></div>
+        <div class="stat"><div class="stat-name">Arcos dirigidos</div><div class="stat-number" id="kpi-arcs">22</div><div class="stat-foot">Según las 10 reglas</div></div>
+        <div class="stat"><div class="stat-name">Conexiones bidireccionales</div><div class="stat-number" id="kpi-bidirectional">5 <small>pares</small></div><div class="stat-foot">Relaciones en ambos sentidos</div></div>
+        <div class="stat"><div class="stat-name">Nodo sin salidas</div><div class="stat-number">J</div><div class="stat-foot">Recibe arcos de B, E y G</div></div>
+      </section>
+      <section class="primary" id="visualizacion">
+        <article class="panel">
+          <div class="panel-head"><div><h2 class="panel-title">Visualización de la red</h2><p class="panel-desc">Posiciones originales en el plano cartesiano (X, Y)</p></div><div class="controls"><label class="switch"><input id="showGrid" type="checkbox" checked> Cuadrícula</label><label class="switch"><input id="showArrows" type="checkbox" checked> Flechas</label><label class="switch"><input id="showCoords" type="checkbox"> Coordenadas</label><button class="btn" id="resetButton" type="button">Ver toda la red</button></div></div>
+          <div class="viz-wrap"><svg id="graph" viewBox="0 0 960 600" role="img" aria-label="Grafo dirigido con 10 nodos y 22 arcos, dispuestos según coordenadas cartesianas"></svg></div>
+          <div class="graph-legend"><span class="legend-item"><i class="legend-line"></i> Conexión general</span><span class="legend-item"><i class="legend-line out"></i> Salidas del nodo</span><span class="legend-item"><i class="legend-line in"></i> Entradas al nodo</span></div>
+          <div class="guide">💡 <strong>Cómo usar:</strong> haz clic sobre cualquier nodo A–J, o sobre una letra de la matriz. El sistema destacará los arcos de salida en turquesa y los de entrada en naranja. Para presentar, comienza con A y termina con J.</div>
+        </article>
+        <aside class="panel inspector" aria-live="polite">
+          <div class="panel-head"><div><h2 class="panel-title">Inspector de nodos</h2><p class="panel-desc">Información de la selección</p></div><button class="btn" id="nextButton" type="button">Siguiente →</button></div>
+          <div class="inspector-body">
+            <div class="current-node"><div class="letter" id="currentLetter">A</div><div><div class="node-kicker">NODO SELECCIONADO</div><div class="node-name" id="currentName">Nodo A</div><div class="coord" id="currentCoords">Coordenadas (−5, 4)</div></div></div>
+            <div class="degree-grid"><div class="degree out"><b id="outDegree">4</b><span>Conexiones salientes</span></div><div class="degree in"><b id="inDegree">2</b><span>Conexiones entrantes</span></div></div>
+            <div class="section-mini">↗ Se conecta hacia</div><div class="node-pills" id="outgoingNodes"></div>
+            <div class="section-mini">↘ Recibe conexiones de</div><div class="node-pills" id="incomingNodes"></div>
+            <div class="inspector-tip" id="inspectorTip">En la matriz, las conexiones salientes se leen en la fila del nodo seleccionado y las entrantes en su columna.</div>
+          </div>
+        </aside>
+      </section>
+      <section class="below">
+        <article class="panel" id="matriz"><div class="panel-head"><div><h2 class="panel-title">Matriz de adyacencia</h2><p class="panel-desc">Cada 1 representa un arco desde la fila hacia la columna</p></div><button class="btn primary" type="button" id="exportButton">↓ Exportar CSV</button></div><div class="matrix-wrap"><table class="matrix-table" id="matrixTable" aria-label="Matriz de adyacencia de diez por diez"></table></div><div class="matrix-note"><strong>Lectura:</strong> M<sub>ij</sub> = 1 si existe un arco del nodo i al nodo j; de lo contrario vale 0. Por ejemplo, M<sub>B,J</sub> = 1 y M<sub>J,B</sub> = 0.</div></article>
+        <article class="panel rules-panel" id="reglas"><div class="panel-head"><div><h2 class="panel-title">Reglas de conectividad</h2><p class="panel-desc">Transcritas de la diapositiva 12</p></div></div><div class="rules-list" id="rulesList"></div><div class="explain"><strong>Interpretación importante:</strong> la regla 2.10 dice que J no se conecta con otros nodos. Por coherencia con las reglas 2.2, 2.5 y 2.7, se interpreta que J no <em>envía</em> arcos, aunque sí <em>recibe</em> tres. Esto hace que el modelo sea dirigido.</div></article>
+      </section>
+      <div class="foot">Fuente: Topic 10 · Introduction to Graphs · Diapositiva 12 de 13. Elaboración interactiva a partir de los datos de la actividad.</div>
+    </main>
+  </div>
+  <script>
+  'use strict';
+  // Datos copiados de la diapositiva 12. No hay enlaces o librerías externas.
+  const nodes = [
+    {id:'A',x:-5,y:4}, {id:'B',x:7,y:-6}, {id:'C',x:6,y:7}, {id:'D',x:-7,y:-5},
+    {id:'E',x:5,y:-4}, {id:'F',x:2,y:9}, {id:'G',x:-4,y:6}, {id:'H',x:1,y:-2},
+    {id:'I',x:-6,y:8}, {id:'J',x:3,y:-7}
+  ];
+  const ruleMap = {
+    A:['B','C','D','E'], B:['D','C','I','J'], C:['A'], D:['F'], E:['A','H','J'],
+    F:['D','G','H'], G:['I','J'], H:['E','I'], I:['B','F'], J:[]
+  };
+  const ids=nodes.map(n=>n.id);
+  const edges=ids.flatMap(source=>ruleMap[source].map(target=>({source,target})));
+  const edgeSet=new Set(edges.map(e=>e.source+e.target));
+  const matrix=ids.map(a=>ids.map(b=>Number(edgeSet.has(a+b))));
+  const bidirectional=edges.filter(e=>e.source<e.target && edgeSet.has(e.target+e.source)).length;
+  const svg=document.querySelector('#graph');
+  const NS='http://www.w3.org/2000/svg';
+  const $=sel=>document.querySelector(sel);
+  const getNode=id=>nodes.find(n=>n.id===id);
+  const out=id=>ruleMap[id];
+  const ins=id=>ids.filter(source=>ruleMap[source].includes(id));
+  const svgEl=(name, attrs={}, parent=svg)=>{
+    const el=document.createElementNS(NS,name);
+    Object.entries(attrs).forEach(([k,v])=>el.setAttribute(k,String(v)));
+    if(parent) parent.appendChild(el);
+    return el;
+  };
+  const WIDTH=960, HEIGHT=600, MINX=-9, MAXX=9, MINY=-9, MAXY=11;
+  const plot={left:70,right:910,top:37,bottom:552};
+  function pos(n){return {x:plot.left+(n.x-MINX)/(MAXX-MINX)*(plot.right-plot.left), y:plot.bottom-(n.y-MINY)/(MAXY-MINY)*(plot.bottom-plot.top)};}
+  function fmt(n){return n<0?'−'+Math.abs(n):String(n);}
+  const definitions=svgEl('defs');
+  const markers=[['normal','#8298b1'],['out','#09999f'],['in','#de9839']];
+  for(const [key,color] of markers){
+    const mark=svgEl('marker',{id:'arrow-'+key,viewBox:'0 0 10 10',refX:'9',refY:'5',markerWidth:'5.5',markerHeight:'5.5',orient:'auto-start-reverse',markerUnits:'strokeWidth'},definitions);
+    svgEl('path',{d:'M 0 0 L 10 5 L 0 10 z',fill:color},mark);
+  }
+  const gridLayer=svgEl('g',{id:'gridLayer'});
+  const edgesLayer=svgEl('g',{id:'edgesLayer'});
+  const nodesLayer=svgEl('g',{id:'nodesLayer'});
+  function drawGrid(){
+    gridLayer.replaceChildren();
+    if(!$('#showGrid').checked) return;
+    for(let x=-8;x<=8;x+=2){const p=pos({x,y:0});svgEl('line',{x1:p.x,y1:plot.top,x2:p.x,y2:plot.bottom,class:x===0?'axis-line':'grid-line'},gridLayer);const text=svgEl('text',{x:p.x,y:plot.bottom+21,'text-anchor':'middle',class:'axis-text'},gridLayer);text.textContent=String(x);}
+    for(let y=-8;y<=10;y+=2){const p=pos({x:0,y});svgEl('line',{x1:plot.left,y1:p.y,x2:plot.right,y2:p.y,class:y===0?'axis-line':'grid-line'},gridLayer);const text=svgEl('text',{x:plot.left-14,y:p.y+4,'text-anchor':'end',class:'axis-text'},gridLayer);text.textContent=String(y);}
+    let tx=svgEl('text',{x:plot.right+10,y:pos({x:0,y:0}).y+4,class:'axis-label'},gridLayer);tx.textContent='X';
+    let ty=svgEl('text',{x:pos({x:0,y:0}).x+10,y:plot.top+12,class:'axis-label'},gridLayer);ty.textContent='Y';
+  }
+  function edgePath(source,target){
+    const s=pos(getNode(source)), t=pos(getNode(target));
+    const dx=t.x-s.x,dy=t.y-s.y,length=Math.hypot(dx,dy)||1;
+    const recip=edgeSet.has(target+source);
+    let cx=(s.x+t.x)/2,cy=(s.y+t.y)/2;
+    if(recip){ const bend=Math.min(39,Math.max(27,length*.08));cx+=(-dy/length)*bend;cy+=(dx/length)*bend; }
+    const startDir={x:cx-s.x,y:cy-s.y}, endDir={x:t.x-cx,y:t.y-cy};
+    const ls=Math.hypot(startDir.x,startDir.y)||1, le=Math.hypot(endDir.x,endDir.y)||1;
+    const r=25;
+    const start={x:s.x+r*startDir.x/ls,y:s.y+r*startDir.y/ls};
+    const end={x:t.x-r*endDir.x/le,y:t.y-r*endDir.y/le};
+    return recip?`M ${start.x.toFixed(2)} ${start.y.toFixed(2)} Q ${cx.toFixed(2)} ${cy.toFixed(2)} ${end.x.toFixed(2)} ${end.y.toFixed(2)}`:`M ${start.x.toFixed(2)} ${start.y.toFixed(2)} L ${end.x.toFixed(2)} ${end.y.toFixed(2)}`;
+  }
+  const edgeShapes=[];
+  function drawEdges(){
+    edgesLayer.replaceChildren();edgeShapes.length=0;
+    for(const edge of edges){
+      const path=svgEl('path',{d:edgePath(edge.source,edge.target),class:'edge-path','marker-end':$('#showArrows').checked?'url(#arrow-normal)':'none'},edgesLayer);
+      const title=svgEl('title',{},path);title.textContent=`${edge.source} → ${edge.target}`;
+      edgeShapes.push({...edge,el:path});
+    }
+  }
+  const nodeShapes=[];
+  function drawNodes(){
+    nodesLayer.replaceChildren();nodeShapes.length=0;
+    for(const n of nodes){
+      const p=pos(n);const group=svgEl('g',{class:'node',transform:`translate(${p.x},${p.y})`,role:'button',tabindex:'0','aria-label':`Seleccionar nodo ${n.id}, coordenadas ${n.x} y ${n.y}`},nodesLayer);
+      svgEl('circle',{class:'halo',r:'28'},group);
+      svgEl('circle',{class:'circle',r:'21'},group);
+      const label=svgEl('text',{class:'letter-text',y:'.5'},group); label.textContent=n.id;
+      const coord=svgEl('text',{class:'coord-text',y:'37','data-coord':n.id},group);coord.textContent=`(${fmt(n.x)}, ${fmt(n.y)})`;
+      group.addEventListener('click',()=>selectNode(n.id));
+      group.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();selectNode(n.id);}});
+      nodeShapes.push({id:n.id,el:group});
+    }
+  }
+  let selected='A';
+  function selectNode(id){
+    selected=id;
+    const n=getNode(id), outgoing=out(id),incoming=ins(id);
+    $('#currentLetter').textContent=id;
+    $('#currentName').textContent=`Nodo ${id}`;
+    $('#currentCoords').textContent=`Coordenadas (${fmt(n.x)}, ${fmt(n.y)})`;
+    $('#outDegree').textContent=outgoing.length;
+    $('#inDegree').textContent=incoming.length;
+    function pills(element,arr,cls){element.replaceChildren();if(!arr.length){let empty=document.createElement('span');empty.className='no-data';empty.textContent='Ninguna conexión';element.append(empty);}else for(const other of arr){let s=document.createElement('span');s.className='node-pill '+cls;s.textContent=other;element.append(s);}}
+    pills($('#outgoingNodes'),outgoing,'');pills($('#incomingNodes'),incoming,'in');
+    $('#inspectorTip').textContent=id==='J'?'El nodo J es un sumidero: tiene 0 arcos salientes y 3 entrantes, provenientes de B, E y G. Por eso su fila es completamente cero.':`En la matriz, observa la fila ${id} (salidas) y la columna ${id} (entradas). Las conexiones son dirigidas: una flecha no implica una conexión de regreso.`;
+    for(const e of edgeShapes){ const isOut=e.source===id,isIn=e.target===id;let style=isOut?'edge-out':isIn?'edge-in':'edge-dim';e.el.setAttribute('class','edge-path '+style); e.el.setAttribute('marker-end',$('#showArrows').checked?(isOut?'url(#arrow-out)':isIn?'url(#arrow-in)':'url(#arrow-normal)'):'none');}
+    for(const node of nodeShapes){const outgoingNeighbor=outgoing.includes(node.id),incomingNeighbor=incoming.includes(node.id);let cl='node';if(node.id===id)cl+=' node-selected';else if(outgoingNeighbor&&incomingNeighbor)cl+=' node-both';else if(outgoingNeighbor)cl+=' node-out';else if(incomingNeighbor)cl+=' node-in';else cl+=' node-dim';node.el.setAttribute('class',cl);}
+    document.querySelectorAll('#matrixTable td').forEach(td=>{td.classList.toggle('sel-row',td.dataset.row===id);td.classList.toggle('sel-col',td.dataset.col===id);});
+    document.querySelectorAll('#matrixTable th[data-node]').forEach(th=>th.classList.toggle('sel-head',th.dataset.node===id));
+  }
+  function resetGraph(){
+    selected=null;
+    for(const e of edgeShapes){e.el.setAttribute('class','edge-path');e.el.setAttribute('marker-end',$('#showArrows').checked?'url(#arrow-normal)':'none');}
+    for(const n of nodeShapes)n.el.setAttribute('class','node');
+    document.querySelectorAll('#matrixTable td').forEach(td=>td.classList.remove('sel-row','sel-col'));
+    document.querySelectorAll('#matrixTable th').forEach(th=>th.classList.remove('sel-head'));
+    $('#currentLetter').textContent='—';$('#currentName').textContent='Toda la red';$('#currentCoords').textContent='Selecciona un nodo';$('#outDegree').textContent='—';$('#inDegree').textContent='—';$('#outgoingNodes').replaceChildren();$('#incomingNodes').replaceChildren();$('#inspectorTip').textContent='Haz clic sobre uno de los círculos para visualizar sus conexiones salientes y entrantes.';
+  }
+  function buildMatrix(){
+    const table=$('#matrixTable');table.replaceChildren();
+    const head=document.createElement('thead'),rh=document.createElement('tr');
+    let corner=document.createElement('th');corner.textContent='↘';corner.title='Fila = origen; columna = destino';rh.appendChild(corner);
+    for(const id of ids){const th=document.createElement('th');th.textContent=id;th.dataset.node=id;th.title=`Columna ${id} (destino)`;th.tabIndex=0;th.addEventListener('click',()=>selectNode(id));rh.appendChild(th);}
+    head.append(rh);table.append(head);
+    const body=document.createElement('tbody');
+    ids.forEach((src,i)=>{const tr=document.createElement('tr');const th=document.createElement('th');th.className='row-th';th.dataset.node=src;th.textContent=src;th.title=`Fila ${src} (origen)`;th.tabIndex=0;th.addEventListener('click',()=>selectNode(src));tr.append(th);
+      ids.forEach((dst,j)=>{const td=document.createElement('td');const v=matrix[i][j];td.textContent=String(v);td.className=v?'one':'';td.dataset.row=src;td.dataset.col=dst;td.title=`${src} → ${dst}: ${v} (${v?'existe arco':'no existe arco'})`;td.addEventListener('click',()=>selectNode(src));tr.append(td);});body.append(tr);});table.append(body);
+  }
+  function buildRules(){const list=$('#rulesList');list.replaceChildren();ids.forEach((id,i)=>{const row=document.createElement('div');row.className='rule';const a=document.createElement('span');a.className='source';a.textContent=`2.${i+1}  ${id}`;const b=document.createElement('span');b.className='targets';b.textContent=ruleMap[id].length?`→ ${ruleMap[id].join(', ')}`:'→ Sin salidas';row.append(a,b);list.append(row);});}
+  function downloadCsv(){ const csv=[['Nodo',...ids].join(','),...ids.map((id,i)=>[id,...matrix[i]].join(','))].join('\r\n');const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='matriz_adyacencia_grafo_dirigido.csv';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);}
+  function validate(){
+    const count=matrix.flat().reduce((a,v)=>a+v,0);
+    const expected=['0111100000','0011000011','1000000000','0000010000','1000000101','0001001100','0000000011','0000100010','0100010000','0000000000'];
+    if(count!==22||ids.length!==10||bidirectional!==5||matrix.some((row,i)=>row.join('')!==expected[i]))throw Error('Inconsistencia en datos de la diapositiva.');
+    $('#kpi-nodes').textContent=ids.length;$('#kpi-arcs').textContent=count;
+    $('#kpi-bidirectional').innerHTML=bidirectional+' <small>pares</small>';
+  }
+  validate();buildMatrix();buildRules();drawGrid();drawEdges();drawNodes();selectNode('A');
+  $('#showGrid').addEventListener('change',drawGrid);
+  $('#showArrows').addEventListener('change',()=>{if(selected)selectNode(selected);else resetGraph();});
+  $('#showCoords').addEventListener('change',()=>{document.querySelectorAll('[data-coord]').forEach(t=>t.setAttribute('visibility',$('#showCoords').checked?'visible':'hidden'));});
+  document.querySelectorAll('[data-coord]').forEach(t=>t.setAttribute('visibility','hidden'));
+  $('#resetButton').addEventListener('click',resetGraph);
+  $('#nextButton').addEventListener('click',()=>selectNode(ids[(Math.max(0,ids.indexOf(selected))+1)%ids.length]));
+  $('#exportButton').addEventListener('click',downloadCsv);
+  </script>
+</body>
+</html>
